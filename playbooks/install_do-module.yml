@@ -1,0 +1,7 @@
+---
+- name: Install DigitalOcean Collection
+  hosts: localhost
+  tasks:
+    - name: Install digitalocean.cloud collection
+      ansible.builtin.command:
+        cmd: "ansible-galaxy collection install digitalocean.cloud"
