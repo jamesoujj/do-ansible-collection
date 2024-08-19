@@ -1,0 +1,12 @@
+---
+- name: Install DigitalOcean Collection and Get Balance Info
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Install digitalocean.cloud collection
+      ansible.builtin.command:
+        cmd: "ansible-galaxy collection install digitalocean.cloud"
+    
+    - name: Get balance information
+      digitalocean.cloud.balance_info:
