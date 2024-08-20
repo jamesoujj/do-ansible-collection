@@ -1,0 +1,5 @@
+- name: Run account_info.yml playbook
+  command: ansible-playbook -i localhost, -c local account_info.yml -v -e DIGITALOCEAN_TOKEN="dop_v1_b8630ee6381e7c8410c93ca7ad448f7db98377d4dffec712ff23ba12309c4a7f"
+  args:
+    chdir: /home/projects/awx/do-ansible-collection/playbooks
+  register: account_info_output
