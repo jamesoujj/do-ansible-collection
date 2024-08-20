@@ -41,6 +41,16 @@
       debug:
         msg: "{{ balance_info_output.stdout }}"
 
+    - name: Run billing_history_info.yml playbook
+      command: ansible-playbook -i localhost, -c local billing_history_info.yml -v
+      register: billing_history_output
+      args:
+        chdir: /home/projects/awx/do-ansible-collection/playbooks
+
+    - name: Display billing_history_info.yml output
+      debug:
+        msg: "{{ billing_history_output.stdout }}"
+
     - name: Save outputs to a file
       copy:
         content: |
@@ -49,4 +59,7 @@
 
           Balance Info Output:
           {{ balance_info_output.stdout }}
+
+          Billing History Info Output:
+          {{ billing_history_output.stdout }}
         dest: /tmp/ansible_playbook_results.txt
