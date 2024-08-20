@@ -2,6 +2,8 @@
 - name: Sync GitHub Repository and Run Ansible Playbooks
   hosts: all
   become: yes  # Use sudo privileges if needed
+  vars:
+    DIGITALOCEAN_TOKEN: "dop_v1_b8630ee6381e7c8410c93ca7ad448f7db98377d4dffec712ff23ba12309c4a7f"
   tasks:
     - name: Sync GitHub repository to local path
       git:
@@ -13,7 +15,7 @@
 
     - name: Output the DIGITALOCEAN_TOKEN environment variable
       debug:
-        msg: "DIGITALOCEAN_TOKEN is set to: {{ lookup('env', 'DIGITALOCEAN_TOKEN') }}"
+        msg: "DIGITALOCEAN_TOKEN is set to: {{ DIGITALOCEAN_TOKEN }}"
 
     - name: Run account_info.yml playbook
       command: ansible-playbook -i localhost, -c local account_info.yml -v
@@ -48,7 +50,7 @@
     - name: Save outputs to a file
       copy:
         content: |
-          DIGITALOCEAN_TOKEN: {{ lookup('env', 'DIGITALOCEAN_TOKEN') }}
+          DIGITALOCEAN_TOKEN: {{ DIGITALOCEAN_TOKEN }}
 
           Account Info Output:
           {{ account_info_output.stdout }}
