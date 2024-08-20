@@ -3,11 +3,6 @@
   hosts: all
   become: yes  # Use sudo privileges if needed
   tasks:
-    - name: Change to the projects directory
-      command: cd /home/projects/awx
-      args:
-        chdir: /home/projects/awx
-
     - name: Sync GitHub repository to local path
       git:
         repo: 'https://github.com/jamesoujj/do-ansible-collection.git'
@@ -16,16 +11,11 @@
         force: yes
       register: git_pull
 
-    - name: Change to the playbooks directory
-      command: cd /home/projects/awx/do-ansible-collection/playbooks
-      args:
-        chdir: /home/projects/awx/do-ansible-collection/playbooks
-
     - name: Run account_info.yml playbook
       command: ansible-playbook -i localhost, -c local account_info.yml -v
-      register: account_info_output
       args:
         chdir: /home/projects/awx/do-ansible-collection/playbooks
+      register: account_info_output
 
     - name: Display account_info.yml output
       debug:
@@ -33,9 +23,9 @@
 
     - name: Run balance_info.yml playbook
       command: ansible-playbook -i localhost, -c local balance_info.yml -v
-      register: balance_info_output
       args:
         chdir: /home/projects/awx/do-ansible-collection/playbooks
+      register: balance_info_output
 
     - name: Display balance_info.yml output
       debug:
@@ -43,9 +33,9 @@
 
     - name: Run billing_history_info.yml playbook
       command: ansible-playbook -i localhost, -c local billing_history_info.yml -v
-      register: billing_history_output
       args:
         chdir: /home/projects/awx/do-ansible-collection/playbooks
+      register: billing_history_output
 
     - name: Display billing_history_info.yml output
       debug:
