@@ -2,8 +2,6 @@
 - name: Sync GitHub Repository and Run Ansible Playbooks
   hosts: all
   become: yes  # Use sudo privileges if needed
-  vars:
-    DIGITALOCEAN_TOKEN: "{{ lookup('env', 'DIGITALOCEAN_TOKEN') }}"
   tasks:
     - name: Sync GitHub repository to local path
       git:
@@ -13,12 +11,14 @@
         force: yes
       register: git_pull
 
+    - name: Output the DIGITALOCEAN_TOKEN environment variable
+      debug:
+        msg: "DIGITALOCEAN_TOKEN is set to: {{ lookup('env', 'DIGITALOCEAN_TOKEN') }}"
+
     - name: Run account_info.yml playbook
       command: ansible-playbook -i localhost, -c local account_info.yml -v
       args:
         chdir: /home/projects/awx/do-ansible-collection/playbooks
-      environment:
-        DIGITALOCEAN_TOKEN: "{{ DIGITALOCEAN_TOKEN }}"
       register: account_info_output
 
     - name: Display account_info.yml output
@@ -29,8 +29,6 @@
       command: ansible-playbook -i localhost, -c local balance_info.yml -v
       args:
         chdir: /home/projects/awx/do-ansible-collection/playbooks
-      environment:
-        DIGITALOCEAN_TOKEN: "{{ DIGITALOCEAN_TOKEN }}"
       register: balance_info_output
 
     - name: Display balance_info.yml output
@@ -41,8 +39,6 @@
       command: ansible-playbook -i localhost, -c local billing_history_info.yml -v
       args:
         chdir: /home/projects/awx/do-ansible-collection/playbooks
-      environment:
-        DIGITALOCEAN_TOKEN: "{{ DIGITALOCEAN_TOKEN }}"
       register: billing_history_output
 
     - name: Display billing_history_info.yml output
@@ -52,6 +48,8 @@
     - name: Save outputs to a file
       copy:
         content: |
+          DIGITALOCEAN_TOKEN: {{ lookup('env', 'DIGITALOCEAN_TOKEN') }}
+
           Account Info Output:
           {{ account_info_output.stdout }}
 
