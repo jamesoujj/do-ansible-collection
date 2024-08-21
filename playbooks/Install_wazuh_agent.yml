@@ -1,0 +1,81 @@
+---
+- name: Install and start Wazuh Agent
+  hosts: all
+  become: true
+
+  tasks:
+
+    - name: Detect OS family
+      ansible.builtin.set_fact:
+        is_rpm: "{{ ansible_os_family == 'RedHat' and ansible_architecture == 'x86_64' }}"
+        is_deb: "{{ ansible_os_family == 'Debian' and ansible_architecture == 'x86_64' }}"
+        is_windows: "{{ ansible_os_family == 'Windows' }}"
+    
+    - name: Install Wazuh Agent on RPM-based system - Download RPM
+      when: is_rpm
+      ansible.builtin.get_url:
+        url: https://packages.wazuh.com/4.x/yum/wazuh-agent-4.8.1-1.x86_64.rpm
+        dest: /tmp/wazuh-agent-4.8.1-1.x86_64.rpm
+        mode: '0644'
+
+    - name: Install Wazuh Agent on RPM-based system - Install Package
+      when: is_rpm
+      ansible.builtin.yum:
+        name: /tmp/wazuh-agent-4.8.1-1.x86_64.rpm
+        state: present
+        disable_gpg_check: true
+        envars:
+          WAZUH_MANAGER: '10.147.18.116'
+          WAZUH_AGENT_GROUP: 'default'
+      notify:
+        - Start Wazuh Agent (Linux)
+
+    - name: Install Wazuh Agent on DEB-based system - Download DEB
+      when: is_deb
+      ansible.builtin.get_url:
+        url: https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-agent/wazuh-agent_4.8.1-1_amd64.deb
+        dest: /tmp/wazuh-agent_4.8.1-1_amd64.deb
+        mode: '0644'
+
+    - name: Install Wazuh Agent on DEB-based system - Install Package
+      when: is_deb
+      ansible.builtin.apt:
+        deb: /tmp/wazuh-agent_4.8.1-1_amd64.deb
+        state: present
+        envars:
+          WAZUH_MANAGER: '10.147.18.116'
+          WAZUH_AGENT_GROUP: 'default'
+      notify:
+        - Start Wazuh Agent (Linux)
+
+    - name: Install Wazuh Agent on Windows system
+      when: is_windows
+      ansible.windows.win_get_url:
+        url: https://packages.wazuh.com/4.x/windows/wazuh-agent-4.8.1-1.msi
+        dest: "{{ ansible_env.TEMP }}\\wazuh-agent.msi"
+
+    - name: Install Wazuh Agent on Windows system - Install Package
+      when: is_windows
+      ansible.windows.win_package:
+        path: "{{ ansible_env.TEMP }}\\wazuh-agent.msi"
+        arguments: WAZUH_MANAGER='10.147.18.116' WAZUH_AGENT_GROUP='default'
+        state: present
+      notify:
+        - Start Wazuh Agent (Windows)
+
+  handlers:
+
+    - name: Start Wazuh Agent (Linux)
+      ansible.builtin.systemd:
+        name: wazuh-agent
+        enabled: true
+        state: started
+      when: not is_windows
+
+    - name: Start Wazuh Agent (Windows)
+      ansible.windows.win_service:
+        name: WazuhSvc
+        start_mode: auto
+        state: started
+      when: is_windows
+      
