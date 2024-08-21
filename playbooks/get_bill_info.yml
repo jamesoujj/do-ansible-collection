@@ -3,7 +3,7 @@
   hosts: all
   become: yes  # Use sudo privileges if needed
   vars:
-    DIGITALOCEAN_TOKEN: "dop_v1_b8630ee6381e7c8410c93ca7ad448f7db98377d4dffec712ff23ba12309c4a7f"
+    DIGITALOCEAN_TOKEN: "pelasechangeit"
   tasks:
     - name: Sync GitHub repository to local path
       git:
