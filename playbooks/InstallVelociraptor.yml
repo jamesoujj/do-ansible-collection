@@ -1,0 +1,48 @@
+---
+- name: Install Velociraptor on target server
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Download Velociraptor binary
+      get_url:
+        url: "https://github.com/Velocidex/velociraptor/releases/download/v0.72/velociraptor-v0.72.4-linux-amd64"
+        dest: "/usr/local/bin/velociraptor"
+        mode: '0755'
+
+    - name: Create configuration directory
+      file:
+        path: "/etc/velociraptor"
+        state: directory
+        mode: '0755'
+
+    - name: Generate Velociraptor configuration file
+      shell: |
+        velociraptor config generate > /etc/velociraptor/server.config.yaml
+
+    - name: Create Velociraptor service file
+      copy:
+        content: |
+          [Unit]
+          Description=Velociraptor Server
+          After=network.target
+
+          [Service]
+          Type=simple
+          ExecStart=/usr/local/bin/velociraptor --config /etc/velociraptor/server.config.yaml frontend
+          Restart=on-failure
+
+          [Install]
+          WantedBy=multi-user.target
+        dest: /etc/systemd/system/velociraptor.service
+        mode: '0644'
+
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable and start Velociraptor service
+      systemd:
+        name: velociraptor
+        enabled: yes
+        state: started

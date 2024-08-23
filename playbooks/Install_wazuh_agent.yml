@@ -10,7 +10,7 @@
         is_rpm: "{{ ansible_os_family == 'RedHat' and ansible_architecture == 'x86_64' }}"
         is_deb: "{{ ansible_os_family == 'Debian' and ansible_architecture == 'x86_64' }}"
         is_windows: "{{ ansible_os_family == 'Windows' }}"
-            
+    
     - name: Install Wazuh Agent on RPM-based system - Download RPM
       when: is_rpm
       ansible.builtin.get_url:
@@ -27,8 +27,13 @@
         envars:
           WAZUH_MANAGER: '10.147.18.116'
           WAZUH_AGENT_GROUP: 'default'
-      notify:
-        - Start Wazuh Agent (Linux)
+
+    - name: Reload systemd and start Wazuh Agent on RPM-based system
+      when: is_rpm
+      ansible.builtin.shell: |
+        sudo systemctl daemon-reload
+        sudo systemctl enable wazuh-agent
+        sudo systemctl start wazuh-agent
 
     - name: Install Wazuh Agent on DEB-based system - Download DEB
       when: is_deb
@@ -45,10 +50,15 @@
         envars:
           WAZUH_MANAGER: '10.147.18.116'
           WAZUH_AGENT_GROUP: 'default'
-      notify:
-        - Start Wazuh Agent (Linux)
 
-    - name: Install Wazuh Agent on Windows system
+    - name: Reload systemd and start Wazuh Agent on DEB-based system
+      when: is_deb
+      ansible.builtin.shell: |
+        sudo systemctl daemon-reload
+        sudo systemctl enable wazuh-agent
+        sudo systemctl start wazuh-agent
+
+    - name: Install Wazuh Agent on Windows system - Download MSI
       when: is_windows
       ansible.windows.win_get_url:
         url: https://packages.wazuh.com/4.x/windows/wazuh-agent-4.8.1-1.msi
@@ -60,8 +70,11 @@
         path: "{{ ansible_env.TEMP }}\\wazuh-agent.msi"
         arguments: WAZUH_MANAGER='10.147.18.116' WAZUH_AGENT_GROUP='default'
         state: present
-      notify:
-        - Start Wazuh Agent (Windows)
+
+    - name: Start Wazuh Agent on Windows system
+      when: is_windows
+      ansible.windows.win_shell: |
+        NET START WazuhSvc
 
   handlers:
 
@@ -78,3 +91,4 @@
         start_mode: auto
         state: started
       when: is_windows
+      
