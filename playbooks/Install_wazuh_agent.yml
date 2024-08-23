@@ -10,7 +10,7 @@
         is_rpm: "{{ ansible_os_family == 'RedHat' and ansible_architecture == 'x86_64' }}"
         is_deb: "{{ ansible_os_family == 'Debian' and ansible_architecture == 'x86_64' }}"
         is_windows: "{{ ansible_os_family == 'Windows' }}"
-    
+            
     - name: Install Wazuh Agent on RPM-based system - Download RPM
       when: is_rpm
       ansible.builtin.get_url:
@@ -78,4 +78,3 @@
         start_mode: auto
         state: started
       when: is_windows
-      
