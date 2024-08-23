@@ -46,3 +46,12 @@
         name: velociraptor
         enabled: yes
         state: started
+
+    - name: Check Velociraptor service status
+      command: systemctl status velociraptor
+      register: velociraptor_status
+      failed_when: "'active (running)' not in velociraptor_status.stdout"
+
+    - name: Display Velociraptor service status
+      debug:
+        msg: "{{ velociraptor_status.stdout }}"
